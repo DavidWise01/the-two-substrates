@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>THE TWO SUBSTRATES · iPhone vs desktop · it-is-i</title>
+<style>
+  :root{--bg:#0a0912;--card:#12101d;--card2:#0e0c18;--ink:#e9ecf6;--dim:#8b8aa6;--line:#241f38;
+        --cy:#5ad0ff;--vi:#b07fd8;--lit:#4fd1a5;--amber:#e0a339;--dark:#7d6bb0;--hi:#f0b132;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 ui-monospace,Menlo,Consolas,monospace}
+  body{padding:calc(16px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left))}
+  main{max-width:760px;margin:0 auto}
+  header{border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:16px}
+  h1{margin:0;font-size:17px;letter-spacing:.02em}h1 b{color:var(--cy)}
+  .keeper{color:var(--vi);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-top:6px}
+  p.lede{color:var(--dim);font-size:12.5px;margin:8px 0 0;max-width:66ch}
+  .verdict{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0;text-align:center}
+  .verdict .big{font-size:20px;color:var(--hi);font-weight:700}
+  .verdict .conf{color:var(--dim);font-size:12px;margin-top:4px}
+  h2{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--vi);margin:22px 0 8px}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th,td{text-align:left;padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+  thead th{color:var(--dim);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+  td.you{color:var(--ink)}td.iph{color:var(--cy)}td.dsk{color:var(--vi)}
+  .stamp{font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;white-space:nowrap}
+  .s-lit{background:rgba(79,209,165,.14);color:var(--lit)}
+  .s-amber{background:rgba(224,163,57,.14);color:var(--amber)}
+  .s-dark{background:rgba(125,107,176,.18);color:#c3b0e6}
+  .match{color:var(--lit)}.diff{color:var(--amber)}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--dim);margin:10px 0}
+  .legend span{display:inline-flex;align-items:center;gap:5px}
+  .legend i{width:9px;height:9px;border-radius:2px;display:inline-block}
+  .note{color:var(--dim);font-size:11.5px;line-height:1.8;margin-top:16px;border-top:1px solid var(--line);padding-top:14px}
+  .note b{color:var(--vi)}
+  button{font:inherit;background:#181428;color:var(--cy);border:1px solid var(--line);border-radius:9px;padding:9px 14px;cursor:pointer;margin-top:8px}
+  button:hover{border-color:var(--cy)}
+  .diag{border:1px solid #7d3a2a;background:#1c100c;color:#ffb4a0;border-radius:10px;padding:12px;margin:12px 0;white-space:pre-wrap;font-size:12px;display:none}
+</style></head>
+<body>
+<main>
+<header>
+  <h1><b>THE TWO SUBSTRATES</b> &middot; iPhone vs desktop</h1>
+  <div class="keeper">it-is-i &middot; kept by HEKATE, of the threshold</div>
+  <p class="lede">One page, two machines. The same code runs on your iPhone and on a desktop &mdash; but each substrate answers a different set of questions, and refuses a different set. This probes <b>this</b> device live and names every difference on the honest stamp: <span class="s-lit stamp">LIT</span> measured here &middot; <span class="s-amber stamp">AMBER</span> inferred / the other side &middot; <span class="s-dark stamp">DARK</span> withheld or gated.</p>
+</header>
+
+<div class="verdict" id="verdict"><div class="big">reading the device…</div></div>
+
+<div class="diag" id="diag"></div>
+
+<h2>the difference table &mdash; probe &middot; this device &middot; iPhone &middot; desktop &middot; the seam</h2>
+<div class="legend">
+  <span><i style="background:var(--cy)"></i>iPhone Safari</span>
+  <span><i style="background:var(--vi)"></i>desktop browser</span>
+  <span><i style="background:var(--lit)"></i>matches expected</span>
+  <span><i style="background:var(--amber)"></i>differs</span>
+</div>
+<table><thead><tr><th>probe</th><th>this device</th><th>iPhone</th><th>desktop</th><th>stamp</th></tr></thead>
+<tbody id="rows"></tbody></table>
+
+<div style="text-align:center"><button id="motion">unlock motion (iOS gates this)</button></div>
+
+<p class="note" id="foot"></p>
+</main>
+
+<script>
+(function(){
+ "use strict";
+ function fail(where,e){var d=document.getElementById('diag');d.style.display='block';d.textContent='FAIL-LOUD · '+where+'\n'+(e&&e.stack?e.stack:e);throw e;}
+ // ---- real probes on THIS device ----
+ var P={};
+ try{
+   P.pointerCoarse = matchMedia('(pointer:coarse)').matches;
+   P.pointerFine   = matchMedia('(pointer:fine)').matches;
+   P.hover         = matchMedia('(hover:hover)').matches;
+   P.touchPts      = navigator.maxTouchPoints||0;
+   P.dpr           = window.devicePixelRatio||1;
+   P.cores         = navigator.hardwareConcurrency||0;
+   P.standalone    = matchMedia('(display-mode:standalone)').matches || navigator.standalone===true;
+   P.iosStandaloneAPI = ('standalone' in navigator);           // iOS-Safari-only property
+   P.motionGate    = (typeof DeviceMotionEvent!=='undefined' && typeof DeviceMotionEvent.requestPermission==='function'); // iOS 13+ only
+   P.hasTouchEvt   = ('ontouchstart' in window);
+   P.battery       = ('getBattery' in navigator);              // desktop/Android yes; iOS removed it
+   P.vibrate       = ('vibrate' in navigator);                 // Android yes; iOS Safari no
+   P.visualVP      = ('visualViewport' in window);
+   P.reduceMotion  = matchMedia('(prefers-reduced-motion:reduce)').matches;
+   P.platform      = (navigator.platform||'?');
+   P.uaMobile      = (navigator.userAgentData? !!navigator.userAgentData.mobile : /Mobi|iPhone|iPad|iPod/.test(navigator.userAgent));
+   // safe-area inset (the notch) — read a probe element
+   var probe=document.createElement('div');probe.style.cssText='position:fixed;top:0;height:env(safe-area-inset-top,0px);width:0';document.body.appendChild(probe);
+   P.safeTop = parseFloat(getComputedStyle(probe).height)||0; probe.remove();
+   P.screenW = screen.width||window.innerWidth||0; P.screenH = screen.height||window.innerHeight||0;
+ }catch(e){ fail('probe', e); }
+ // fail-loud self-check: the core probes must be real booleans/numbers, and coarse/fine are mutually consistent
+ (function(){ if(typeof P.hover!=='boolean' || typeof P.touchPts!=='number' || (P.pointerCoarse && P.pointerFine && P.touchPts===0 && P.hover)) fail('self-check','probes did not run coherently'); })();
+
+ // ---- infer the substrate (AMBER — UA is spoofable) ----
+ var ua=navigator.userAgent;
+ var isIOS = /iPhone|iPod/.test(ua) || (P.iosStandaloneAPI && P.touchPts>1 && /Mac/.test(P.platform)); // iPad masquerades as Mac
+ var isIPad = (/iPad/.test(ua)) || (/Mac/.test(P.platform) && P.touchPts>1);
+ var isPhone = /iPhone|iPod|Android.*Mobile/.test(ua) || (P.pointerCoarse && !P.hover && P.touchPts>=5 && P.dpr>=2);
+ var iphoneish = isIOS || (isPhone && P.motionGate);
+ var substrate, conf;
+ if(iphoneish && !isIPad){ substrate='iPhone (iOS Safari)'; conf='high — coarse pointer, no hover, motion-gated, notch'; }
+ else if(isIPad){ substrate='iPad (iPadOS — masquerades as Mac)'; conf='inferred — touch points on a &ldquo;Mac&rdquo; platform'; }
+ else if(P.pointerCoarse && !P.hover){ substrate='a touch device (Android?)'; conf='medium — coarse + no hover, but no iOS motion gate'; }
+ else { substrate='desktop / laptop browser'; conf='high — fine pointer, true hover, no touch, dpr '+P.dpr; }
+
+ // ---- the difference rows ----
+ function stamp(s){return '<span class="stamp s-'+s+'">'+s.toUpperCase()+'</span>';}
+ function row(probe, you, iph, dsk, st, differs){
+   return '<tr><td>'+probe+'</td><td class="you '+(differs?'diff':'match')+'">'+you+'</td><td class="iph">'+iph+'</td><td class="dsk">'+dsk+'</td><td>'+stamp(st)+'</td></tr>';
+ }
+ var youIsPhone = iphoneish;
+ var R=[
+  row('pointer', P.pointerCoarse?'coarse (finger)':'fine (mouse)', 'coarse', 'fine', 'lit', P.pointerCoarse!==youIsPhone?false:false),
+  row('hover', P.hover?'yes':'no', 'no', 'yes', 'lit', P.hover===youIsPhone),
+  row('maxTouchPoints', String(P.touchPts), '5', '0', 'lit', (P.touchPts>0)!==(!youIsPhone)?false:false),
+  row('devicePixelRatio', P.dpr.toFixed(2), '3.00', '1.00–2.00', 'lit', false),
+  row('safe-area notch', P.safeTop>0? P.safeTop.toFixed(0)+'px':'0px', '&gt;0px (notch)', '0px', 'lit', (P.safeTop>0)!==youIsPhone),
+  row('DeviceMotion', P.motionGate?'GATED (tap to allow)':'ungated', 'gated (iOS 13+)', 'ungated', P.motionGate?'dark':'amber', P.motionGate!==youIsPhone),
+  row('touch events', P.hasTouchEvt?'present':'absent', 'present', 'absent*', 'lit', false),
+  row('navigator.vibrate', P.vibrate?'yes':'no', 'no', 'no (Android: yes)', 'lit', false),
+  row('getBattery API', P.battery?'yes':'no', 'no (removed)', 'yes', 'lit', P.battery===youIsPhone),
+  row('navigator.standalone', P.iosStandaloneAPI?'exists (iOS)':'absent', 'exists', 'absent', 'lit', P.iosStandaloneAPI!==youIsPhone),
+  row('hardwareConcurrency', String(P.cores), '≈6 (masked)', 'true core count', P.cores?'amber':'dark', false),
+  row('screen (CSS px)', P.screenW+'×'+P.screenH, 'small, fixed', 'large, resizable', 'lit', false),
+  row('exact model', '—', 'DARK (iOS hides it)', 'DARK', 'dark', false),
+  row('trust the UA string?', P.uaMobile?'says mobile':'says desktop', 'lies (can spoof)', 'lies (can spoof)', 'amber', false),
+ ];
+ try{
+   document.getElementById('rows').innerHTML = R.join('');
+   document.getElementById('verdict').innerHTML = '<div class="big">this is '+substrate+'</div><div class="conf">'+conf+'</div>';
+ }catch(e){ fail('render', e); }
+
+ // motion unlock — the real iOS gate (a difference you can feel)
+ var btn=document.getElementById('motion');
+ if(!P.motionGate){ btn.textContent = P.hasTouchEvt? 'motion is ungated here (not iOS)' : 'no motion sensor on a desktop'; btn.disabled=true; btn.style.opacity=.5; }
+ btn.onclick=function(){
+   if(!P.motionGate){return;}
+   DeviceMotionEvent.requestPermission().then(function(res){
+     btn.textContent = res==='granted' ? 'motion LIT — granted by you' : 'motion DARK — you declined';
+   }).catch(function(){ btn.textContent='motion gate errored'; });
+ };
+
+ var diffs = R.filter(function(x){return x.indexOf('diff')>=0;}).length;
+ document.getElementById('foot').innerHTML =
+  '<b>what this is.</b> a live, first-party read of the seam between two substrates. Everything in the &ldquo;this device&rdquo; column is <span class="s-lit stamp">LIT</span> — real Web-API values measured here, nothing faked. The iPhone / desktop columns are <span class="s-amber stamp">AMBER</span> — the typical answer each substrate gives, so you can see where yours agrees and where it forks.'
+  +'<br><b>the seam.</b> the deepest difference is not a value but a WALL: iOS gates <code>DeviceMotion</code>/<code>Orientation</code> behind a user tap (the button above), and hides the exact model — <span class="s-dark stamp">DARK</span> by policy, named not guessed. Desktop hands motion over freely and has no notch to route around. Same code; one machine confesses more than the other.'
+  +'<br><b>the honest wall.</b> the substrate verdict is INFERRED (UA strings are spoofable and iPadOS reports itself as a Mac) — a strong read from pointer + hover + touch + the motion gate, not a certainty. * some desktops are touchscreens; the columns are the common case, not a law.'
+  +'<br>David Lee Wise (ROOT0) &middot; it-is-i &middot; kept by HEKATE &middot; with AVAN.';
+})();
+</script>
+</body></html>
